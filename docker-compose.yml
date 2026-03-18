@@ -33,8 +33,10 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data:rw
+    env_file:
+      - ./back/.env
     environment:
-      - DATABASE_URL=sqlite:///app/data/dictionary.db
+      - DEFAULT_DB_PATH=/app/data/dictionary.db
       - PYTHONUNBUFFERED=1
       - PYTHONPATH=/app
     networks:
@@ -66,4 +68,4 @@ volumes:
 
 networks:
   app-network:
-    driver: bridge 
+    driver: bridge

@@ -14,7 +14,7 @@ import {
   Alert,
   InputNumber,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined, LogoutOutlined } from "@ant-design/icons";
 import api from "../services/api";
 
 const { Title } = Typography;
@@ -22,6 +22,14 @@ const { Option } = Select;
 
 function Admin() {
   const [form] = Form.useForm();
+  const [loginForm] = Form.useForm();
+
+  // 认证状态
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // 汉字管理状态
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -32,10 +40,55 @@ function Admin() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
+  // 检查登录状态
   useEffect(() => {
-    fetchLevels();
-    fetchCharacters(1, pageSize);
+    checkAuthStatus();
   }, []);
+
+  const checkAuthStatus = async () => {
+    setIsCheckingAuth(true);
+    const loggedIn = api.isAdminLoggedIn();
+    if (loggedIn) {
+      try {
+        await api.verifyAdminToken();
+        setIsLoggedIn(true);
+        // 加载数据
+        fetchLevels();
+        fetchCharacters(1, pageSize);
+      } catch (error) {
+        console.error("Token 验证失败:", error);
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
+    }
+    setIsCheckingAuth(false);
+  };
+
+  const handleLogin = async (values) => {
+    setLoginLoading(true);
+    try {
+      await api.adminLogin(values.password);
+      message.success("登录成功");
+      setIsLoggedIn(true);
+      // 加载数据
+      fetchLevels();
+      fetchCharacters(1, pageSize);
+    } catch (error) {
+      console.error("登录失败:", error);
+      message.error(error.response?.data?.detail || "登录失败，请检查密码");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    api.adminLogout();
+    setIsLoggedIn(false);
+    setCharacters([]);
+    setLevels([]);
+    message.info("已退出登录");
+  };
 
   const fetchLevels = async () => {
     try {
@@ -68,7 +121,12 @@ function Admin() {
     } catch (error) {
       console.error("Error fetching characters:", error);
       message.error("获取汉字列表失败");
-      setError(error.message);
+      if (error.response?.status === 401) {
+        setIsLoggedIn(false);
+        setError("认证失败，请重新登录");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -88,7 +146,12 @@ function Admin() {
       fetchCharacters(currentPage, pageSize);
     } catch (error) {
       console.error("Error saving character:", error);
-      message.error(error.response?.data?.detail || "保存失败");
+      if (error.response?.status === 401) {
+        message.error("认证失败，请重新登录");
+        setIsLoggedIn(false);
+      } else {
+        message.error(error.response?.data?.detail || "保存失败");
+      }
     }
   };
 
@@ -123,7 +186,12 @@ function Admin() {
           fetchCharacters(currentPage, pageSize);
         } catch (error) {
           console.error("Error deleting character:", error);
-          message.error("删除失败");
+          if (error.response?.status === 401) {
+            message.error("认证失败，请重新登录");
+            setIsLoggedIn(false);
+          } else {
+            message.error("删除失败");
+          }
         }
       },
     });
@@ -181,9 +249,78 @@ function Admin() {
     },
   ];
 
+  // 登录页面
+  if (isCheckingAuth) {
+    return (
+      <div style={{ padding: "24px", textAlign: "center" }}>
+        <Typography.Text>验证登录状态...</Typography.Text>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div
+        style={{
+          padding: "24px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "400px",
+        }}
+      >
+        <Card
+          title="管理员登录"
+          style={{ width: "100%", maxWidth: 400 }}
+        >
+          <Form form={loginForm} layout="vertical" onFinish={handleLogin}>
+            <Form.Item
+              name="password"
+              label="管理员密码"
+              rules={[{ required: true, message: "请输入管理员密码" }]}
+            >
+              <Input.Password
+                placeholder="请输入管理员密码"
+                size="large"
+                onPressEnter={loginForm.submit}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loginLoading}
+                block
+                size="large"
+              >
+                登录
+              </Button>
+            </Form.Item>
+          </Form>
+          <Alert
+            message="提示"
+            description="请输入后端配置的管理员密码进行登录"
+            type="info"
+            showIcon
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  // 管理页面
   return (
     <div className="admin-container" style={{ padding: "24px" }}>
-      <Title level={2}>汉字管理</Title>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <Title level={2} style={{ margin: 0 }}>汉字管理</Title>
+        <Button
+          icon={<LogoutOutlined />}
+          onClick={handleLogout}
+          danger
+        >
+          退出登录
+        </Button>
+      </div>
 
       {error && (
         <Alert
@@ -191,7 +328,9 @@ function Admin() {
           description={error}
           type="error"
           showIcon
+          closable
           style={{ marginBottom: 16 }}
+          onClose={() => setError(null)}
         />
       )}
 

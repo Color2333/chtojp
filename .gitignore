@@ -8,6 +8,9 @@ env/
 .env
 *.egg
 
+# Backend .env specifically
+back/.env
+
 # Node
 node_modules/
 .pnp
@@ -20,11 +23,17 @@ front/hanzi-lookup-system/build/
 *.db
 *.db-journal
 
+# Data directory
+data/
+
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+
+# Serena
+.serena/
 
 # OS
 .DS_Store

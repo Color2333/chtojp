@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -7,8 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    PYTHONPATH=/app \
-    DATABASE_URL="sqlite:///app/data/dictionary.db"
+    PYTHONPATH=/app
 
 # 2. 配置 APT 源并安装依赖
 RUN set -ex; \
@@ -18,13 +17,14 @@ RUN set -ex; \
     echo "deb http://mirrors.aliyun.com/debian/ bookworm main non-free contrib" > /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/debian-security bookworm-security main non-free contrib" >> /etc/apt/sources.list && \
     echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main non-free contrib" >> /etc/apt/sources.list && \
-    # 更新并安装必要的包
+    # 更新并安装必要的包（包含 libffi-dev 支持 passlib bcrypt）
     apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     gnupg \
     sqlite3 \
+    libffi-dev \
     && \
     # 清理
     apt-get clean && \
@@ -43,12 +43,13 @@ RUN set -ex; \
     sleep 5; \
     done && \
     # 验证安装
-    python -c "import fastapi; import uvicorn; import sqlalchemy; import pydantic_settings" && \
+    python -c "import fastapi; import uvicorn; import sqlalchemy; import pydantic_settings; import passlib; import bcrypt" && \
     # 确保 uvicorn 可执行文件存在
     which uvicorn
 
 # 4. 复制代码并设置权限
 COPY . .
+
 RUN useradd -m appuser && \
     mkdir -p /app/data && \
     chown -R appuser:appuser /app && \
@@ -57,4 +58,4 @@ RUN useradd -m appuser && \
 USER appuser
 
 EXPOSE 8000
-CMD ["/usr/local/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["/usr/local/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
