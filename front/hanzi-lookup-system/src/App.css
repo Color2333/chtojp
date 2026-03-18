@@ -71,13 +71,41 @@ body {
   .logo {
     display: none;
   }
-  
-  .site-layout-content {
-    padding: 16px;
+
+  .ant-layout-content {
+    padding: 0 12px !important;
+    margin-top: 12px !important;
   }
   
+  .site-layout-content {
+    padding: 12px;
+  }
+
+  .ant-layout-header {
+    padding: 0 12px;
+  }
+
+  .ant-layout-footer {
+    padding: 12px;
+  }
+
   .character-display {
     flex-direction: column;
+  }
+
+  .search-container .ant-table,
+  .level-browser-container .ant-table {
+    font-size: 12px;
+  }
+
+  .search-container .ant-table-cell,
+  .level-browser-container .ant-table-cell {
+    padding: 8px !important;
+  }
+
+  .search-container .ant-btn,
+  .level-browser-container .ant-btn {
+    font-size: 12px;
   }
 }
 

@@ -50,9 +50,11 @@ const api = {
     return response.data;
   },
 
-  // Get all characters
-  getCharacters: async () => {
+  // Get all characters (paginated)
+  getCharacters: async (page = 1, size = 20) => {
+    const offset = (page - 1) * size;
     const response = await axios.get(`${API_BASE_URL}/v1/characters`, {
+      params: { limit: size, offset },
       headers: {
         Authorization: `Bearer ${getAdminToken()}`,
       },

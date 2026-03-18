@@ -17,6 +17,7 @@ import {
   Empty,
   message,
   List,
+  Skeleton,
 } from "antd";
 import {
   SearchOutlined,
@@ -32,6 +33,7 @@ function SearchPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useState(new URLSearchParams(location.search));
+  const [searchInput, setSearchInput] = useState(searchParams.get("q") || "");
   const [searchResults, setSearchResults] = useState([]);
   const [totalResults, setTotalResults] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,6 +48,7 @@ function SearchPage() {
   useEffect(() => {
     const query = searchParams.get("q");
     if (query) {
+      setSearchInput(query);
       handleSearch(query, searchLang);
     }
     fetchHotSearches();
@@ -199,8 +202,8 @@ function SearchPage() {
           <Col flex="auto">
             <Search
               placeholder="输入搜索内容"
-              value={searchParams.get("q") || ""}
-              onChange={(e) => searchParams.set("q", e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               enterButton={
                 <Button
                   type="primary"
@@ -235,10 +238,11 @@ function SearchPage() {
       </Card>
 
       {loading ? (
-        <div style={{ textAlign: "center", padding: 50 }}>
-          <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-          <p style={{ marginTop: 16 }}>正在搜索...</p>
-        </div>
+        <Card style={{ marginBottom: 24 }}>
+          <Skeleton active paragraph={{ rows: 5 }} />
+          <Skeleton active paragraph={{ rows: 5 }} />
+          <Skeleton active paragraph={{ rows: 3 }} />
+        </Card>
       ) : searched ? (
         searchResults.length > 0 ? (
           <>

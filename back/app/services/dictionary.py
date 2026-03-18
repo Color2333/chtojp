@@ -563,20 +563,26 @@ class DictionaryService:
 
     @staticmethod
     def get_hot_searches(conn: sqlite3.Connection, limit: int = 10) -> List[Dict[str, Any]]:
-        """获取热门搜索词"""
+        """获取热门搜索词，过滤过短或无意义的搜索"""
         cursor = conn.cursor()
         cursor.execute("""
             SELECT search_term as term, search_count as count
             FROM hot_searches
+            WHERE LENGTH(search_term) >= 1 AND search_count >= 1
             ORDER BY search_count DESC, last_searched DESC
             LIMIT ?
-        """, (limit,))
+        """, (limit * 3,))  # 多取一些，过滤后再截断
 
-        return [dict(row) for row in cursor.fetchall()]
+        results = [dict(row) for row in cursor.fetchall()]
+        # 过滤掉无意义的搜索词（长度小于1或纯空格）
+        filtered = [r for r in results if r['term'] and len(r['term'].strip()) >= 1]
+        return filtered[:limit]
 
     @staticmethod
     def record_search(conn: sqlite3.Connection, search_term: str) -> None:
-        """记录搜索词"""
+        """记录搜索词，忽略过短或无意义的搜索"""
+        if not search_term or len(search_term.strip()) < 1:
+            return
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO hot_searches (search_term, search_count, last_searched)

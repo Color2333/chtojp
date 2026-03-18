@@ -7,7 +7,7 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { Layout, Menu, Divider, ConfigProvider, Spin } from "antd";
+import { Layout, Menu, Divider, ConfigProvider, Spin, BackTop } from "antd";
 import zhCN from "antd/es/locale/zh_CN";
 import "antd/dist/reset.css";
 import "./App.css";
@@ -20,6 +20,7 @@ const LevelBrowser = lazy(() => import("./pages/LevelBrowser"));
 const Stats = lazy(() => import("./pages/Stats"));
 const About = lazy(() => import("./pages/About"));
 const Admin = lazy(() => import("./pages/Admin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const { Header, Content, Footer } = Layout;
 
@@ -63,19 +64,29 @@ const PageLoader = () => (
 function Navigation() {
   const location = useLocation();
 
+  // 移动端隐藏部分菜单项，简化导航
+  const isMobile = window.innerWidth < 768;
+
+  const items = [
+    { key: "/", label: <Link to="/">首页</Link> },
+    { key: "/search", label: <Link to="/search">搜索</Link> },
+    { key: "/levels", label: <Link to="/levels">级别</Link> },
+  ];
+
+  if (!isMobile) {
+    items.push(
+      { key: "/stats", label: <Link to="/stats">统计</Link> },
+      { key: "/about", label: <Link to="/about">关于</Link> },
+      { key: "/admin", label: <Link to="/admin">管理</Link> },
+    );
+  }
+
   return (
     <Menu
       theme="dark"
       mode="horizontal"
       selectedKeys={[location.pathname]}
-      items={[
-        { key: "/", label: <Link to="/">首页</Link> },
-        { key: "/search", label: <Link to="/search">搜索</Link> },
-        { key: "/levels", label: <Link to="/levels">级别浏览</Link> },
-        { key: "/stats", label: <Link to="/stats">统计</Link> },
-        { key: "/about", label: <Link to="/about">关于</Link> },
-        { key: "/admin", label: <Link to="/admin">管理</Link> },
-      ]}
+      items={items}
     />
   );
 }
@@ -90,7 +101,7 @@ function App() {
             <Navigation />
           </Header>
           <Content style={{ padding: "0 50px", marginTop: 20 }}>
-            <div className="site-layout-content">
+            <div className="site-layout-content" style={{ maxWidth: 1200, margin: "0 auto" }}>
               <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -102,6 +113,7 @@ function App() {
                     <Route path="/stats" element={<Stats />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/admin" element={<Admin />} />
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
               </ErrorBoundary>
@@ -110,6 +122,7 @@ function App() {
           <Footer style={{ textAlign: "center" }}>
             日中汉字对照查询系统 ©{new Date().getFullYear()} Created with React
           </Footer>
+          <BackTop style={{ right: 24, bottom: 24 }} />
         </Layout>
       </Router>
     </ConfigProvider>

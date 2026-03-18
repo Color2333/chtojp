@@ -79,8 +79,8 @@ function About() {
             <Space wrap>
               <Tag color="green">FastAPI</Tag>
               <Tag color="green">Python</Tag>
-              <Tag color="green">SQLAlchemy</Tag>
-              <Tag color="green">PostgreSQL</Tag>
+              <Tag color="green">SQLite</Tag>
+              <Tag color="green">Uvicorn</Tag>
             </Space>
           </div>
         </Space>

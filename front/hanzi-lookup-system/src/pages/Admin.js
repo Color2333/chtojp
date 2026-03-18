@@ -28,10 +28,13 @@ function Admin() {
   const [modalVisible, setModalVisible] = useState(false);
   const [levels, setLevels] = useState([]);
   const [error, setError] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
     fetchLevels();
-    fetchCharacters();
+    fetchCharacters(1, pageSize);
   }, []);
 
   const fetchLevels = async () => {
@@ -44,20 +47,23 @@ function Admin() {
     }
   };
 
-  const fetchCharacters = async () => {
+  const fetchCharacters = async (page = 1, size = pageSize) => {
     try {
       setLoading(true);
-      const data = await api.getCharacters();
-      console.log("Characters data:", data); // 添加日志
+      const data = await api.getCharacters(page, size);
       if (data && data.items) {
         setCharacters(
           data.items.map((item) => ({
             ...item,
-            key: item.id, // 确保每行都有唯一的 key
+            key: item.id,
           }))
         );
+        setTotal(data.total);
+        setCurrentPage(page);
+        setPageSize(size);
       } else {
         setCharacters([]);
+        setTotal(0);
       }
     } catch (error) {
       console.error("Error fetching characters:", error);
@@ -79,7 +85,7 @@ function Admin() {
       }
       setModalVisible(false);
       form.resetFields();
-      fetchCharacters();
+      fetchCharacters(currentPage, pageSize);
     } catch (error) {
       console.error("Error saving character:", error);
       message.error(error.response?.data?.detail || "保存失败");
@@ -89,7 +95,13 @@ function Admin() {
   const handleEdit = (record) => {
     setEditingId(record.id);
     form.setFieldsValue({
-      ...record,
+      id: record.id,
+      kana_group: record.kana_group,
+      japanese_kanji: record.japanese_kanji,
+      chinese_hanzi: record.chinese_hanzi,
+      level: record.level,
+      forms_match: record.forms_match,
+      examples: record.examples,
       on_readings: record.on_readings?.split("、") || [],
       kun_readings: record.kun_readings?.split("、") || [],
       chinese_readings: record.chinese_readings?.split("、") || [],
@@ -98,14 +110,23 @@ function Admin() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await api.deleteCharacter(id);
-      message.success("汉字删除成功");
-      fetchCharacters();
-    } catch (error) {
-      console.error("Error deleting character:", error);
-      message.error("删除失败");
-    }
+    Modal.confirm({
+      title: "确认删除",
+      content: "删除后无法恢复，确定要删除这个汉字吗？",
+      okText: "确定删除",
+      okType: "danger",
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          await api.deleteCharacter(id);
+          message.success("汉字删除成功");
+          fetchCharacters(currentPage, pageSize);
+        } catch (error) {
+          console.error("Error deleting character:", error);
+          message.error("删除失败");
+        }
+      },
+    });
   };
 
   const columns = [
@@ -196,9 +217,12 @@ function Admin() {
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
+            current: currentPage,
+            pageSize: pageSize,
+            total: total,
             showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条记录`,
+            showTotal: (t) => `共 ${t} 条记录`,
+            onChange: (page, size) => fetchCharacters(page, size),
           }}
         />
       </Card>

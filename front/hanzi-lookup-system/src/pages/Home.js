@@ -60,18 +60,34 @@ function Home() {
       message.warning("请输入搜索内容");
       return;
     }
+    const keyword = value.trim();
     // 记录搜索词
-    api.recordSearch(value.trim());
+    api.recordSearch(keyword);
 
-    // Determine if input is Japanese or Chinese
+    // 更完整的中日文判断逻辑
     let lang = "ja";
-    // Simple heuristic: if it contains Chinese characters only found in simplified Chinese, treat as Chinese
-    const simplifiedOnly = /[场务观态镜]/; // Add more characters as needed
-    if (simplifiedOnly.test(value)) {
+    // 包含中文简化独有字 → 中文
+    const simplifiedOnly = /[场务观态镜欢寻仅杂尽丰临举旧叶号严争交产亩义乡乐习书买乱争亘亚产享价众优会体余佣侠侣侧侨俭俄俩俭偿储兴兽养兼冒卤单卖卫却卷厅厉压厌厚原厩去县参叁又双变叙叠台号叹吹呜呜厦嘱骗审肃肩肾肿胀胁胜胶胶脑脏脐脸腊腌腊腻腾臢腿裤褒膛酱裹释里重量链针铁锋错锦锅锤锻锈门问闷闸闹闺闽阁闽阅队阶际陆陈降际隆隐饥验骤骸高高鬼魅鸟鸡鸭鹅鹾鹾麦黄黑默黩黥黩齐齿龙龟龠]/;
+    // 包含日语汉字独有字 → 日语
+    const japaneseOnly = /[亜哀圧圦唖闇_iface_valuetype_va_list安德];
+    // 包含假名 → 日语
+    const hasKana = /[ぁ-んァ-ヶ]/;
+    // 纯拉丁字母 → 中文拼音
+    const isPinyin = /^[a-zA-ZüÜ]+$/;
+
+    if (isPinyin.test(keyword)) {
       lang = "cn";
+    } else if (hasKana.test(keyword)) {
+      lang = "ja";
+    } else if (simplifiedOnly.test(keyword)) {
+      lang = "cn";
+    } else {
+      // 默认跳转到搜索页让用户选择
+      lang = "ja";
     }
+
     window.location.href = `/search?q=${encodeURIComponent(
-      value
+      keyword
     )}&lang=${lang}`;
   };
 
