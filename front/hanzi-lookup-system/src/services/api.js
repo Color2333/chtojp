@@ -2,7 +2,9 @@
 import axios from "axios";
 
 const API_BASE_URL = "/api"; // 使用相对路径，让 Nginx 代理处理
-const ADMIN_TOKEN = "admin123"; // 与后端配置的管理员令牌保持一致
+
+// 管理员 token 应通过环境变量注入，不硬编码在前端
+const getAdminToken = () => process.env.REACT_APP_ADMIN_TOKEN || "";
 
 const api = {
   // Search for characters
@@ -52,7 +54,7 @@ const api = {
   getCharacters: async () => {
     const response = await axios.get(`${API_BASE_URL}/v1/characters`, {
       headers: {
-        Authorization: `Bearer ${ADMIN_TOKEN}`,
+        Authorization: `Bearer ${getAdminToken()}`,
       },
     });
     return response.data;
@@ -65,7 +67,7 @@ const api = {
       character,
       {
         headers: {
-          Authorization: `Bearer ${ADMIN_TOKEN}`,
+          Authorization: `Bearer ${getAdminToken()}`,
         },
       }
     );
@@ -78,7 +80,7 @@ const api = {
       character,
       {
         headers: {
-          Authorization: `Bearer ${ADMIN_TOKEN}`,
+          Authorization: `Bearer ${getAdminToken()}`,
         },
       }
     );
@@ -90,7 +92,7 @@ const api = {
       `${API_BASE_URL}/v1/admin/characters/${id}`,
       {
         headers: {
-          Authorization: `Bearer ${ADMIN_TOKEN}`,
+          Authorization: `Bearer ${getAdminToken()}`,
         },
       }
     );

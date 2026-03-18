@@ -5,7 +5,6 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, Body
 from typing import Dict, Any
 import sqlite3
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -57,7 +56,7 @@ async def search_characters(
 @router.get("/hot")
 async def get_hot_searches(
     limit: int = 10,
-    db: Session = Depends(get_db)
+    db: sqlite3.Connection = Depends(get_db)
 ):
     """获取热门搜索词"""
     try:
@@ -69,7 +68,7 @@ async def get_hot_searches(
 @router.post("/record")
 async def record_search(
     search_record: SearchRecord = Body(...),
-    db: Session = Depends(get_db)
+    db: sqlite3.Connection = Depends(get_db)
 ):
     """记录搜索词"""
     try:

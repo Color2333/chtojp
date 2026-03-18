@@ -92,11 +92,15 @@ def create_view_if_not_exists(conn):
 def init_db():
     """
     数据库初始化函数
-    可用于创建表和初始索引
+    创建视图（如果数据库已存在）或创建表和视图（新数据库）
     """
-    # 如果数据库已存在，则跳过初始化
     if os.path.exists(DB_PATH):
         print(f"数据库已存在: {DB_PATH}")
+        # 数据库已存在，确保视图已创建
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        conn.row_factory = sqlite3.Row
+        create_view_if_not_exists(conn)
+        conn.close()
         return
     
     # 如果目录不存在，创建目录

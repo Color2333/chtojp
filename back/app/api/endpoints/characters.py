@@ -5,9 +5,8 @@
 from fastapi import APIRouter, Depends, Path, Query, HTTPException
 from typing import Dict, Any, List
 import sqlite3
-from sqlalchemy.orm import Session
 
-from app.core.database import get_db, create_view_if_not_exists
+from app.core.database import get_db
 from app.schemas.character import CharacterDetail, SearchResult
 from app.services.dictionary import DictionaryService
 
@@ -22,30 +21,27 @@ async def get_all_characters(
 ) -> Dict[str, Any]:
     """
     获取所有汉字列表
-    
+
     - **limit**: 结果数量限制 (1-100)
     - **offset**: 结果偏移量
-    
+
     示例:
     - `/api/v1/characters` - 获取所有汉字
     """
     try:
-        # 确保视图存在
-        create_view_if_not_exists(db)
-        
         cursor = db.cursor()
-        
+
         # 获取总数
         cursor.execute("SELECT COUNT(*) FROM character_view")
         total = cursor.fetchone()[0]
-        
+
         # 获取数据
         cursor.execute('''
-        SELECT * FROM character_view 
+        SELECT * FROM character_view
         ORDER BY id
         LIMIT ? OFFSET ?
         ''', (limit, offset))
-        
+
         # 转换结果
         items = []
         for row in cursor.fetchall():
@@ -57,7 +53,7 @@ async def get_all_characters(
             if not all(k in item for k in ['id', 'japanese_kanji', 'chinese_hanzi']):
                 continue
             items.append(item)
-        
+
         return {"total": total, "items": items}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -68,7 +64,7 @@ async def get_levels(
 ) -> List[str]:
     """
     获取所有汉字级别
-    
+
     示例:
     - `/api/v1/characters/levels` - 获取所有级别
     """
@@ -83,7 +79,7 @@ async def get_random_character(
 ) -> Dict[str, Any]:
     """
     获取随机汉字
-    
+
     示例:
     - `/api/v1/characters/random` - 获取随机汉字
     """
@@ -102,9 +98,9 @@ async def get_character(
 ) -> Dict[str, Any]:
     """
     获取指定ID的汉字详情
-    
+
     - **id**: 汉字ID
-    
+
     示例:
     - `/api/v1/characters/0001` - 获取ID为0001的汉字
     """
@@ -125,11 +121,11 @@ async def get_characters_by_level(
 ) -> Dict[str, Any]:
     """
     获取指定级别的汉字
-    
+
     - **level**: 汉字级别
     - **limit**: 结果数量限制 (1-100)
     - **offset**: 结果偏移量
-    
+
     示例:
     - `/api/v1/characters/level/一级汉字` - 获取一级汉字
     """
