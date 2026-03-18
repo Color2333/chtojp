@@ -18,6 +18,16 @@ import api from "../services/api";
 
 const { Title, Text } = Typography;
 
+const kanjiCardStyle = {
+  minWidth: 150,
+  width: "auto",
+  height: 180,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "0 24px",
+};
+
 function CharacterDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -86,14 +96,8 @@ function CharacterDetail() {
                     <Col>
                       <Card
                         style={{
-                          minWidth: 150,
-                          width: "auto",
-                          height: 180,
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
+                          ...kanjiCardStyle,
                           border: "3px solid #1890ff",
-                          padding: "0 24px",
                         }}
                       >
                         <div
@@ -126,14 +130,8 @@ function CharacterDetail() {
                     <Col>
                       <Card
                         style={{
-                          minWidth: 150,
-                          width: "auto",
-                          height: 180,
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
+                          ...kanjiCardStyle,
                           border: "3px solid #52c41a",
-                          padding: "0 24px",
                         }}
                       >
                         <div

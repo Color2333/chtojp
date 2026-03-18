@@ -7,8 +7,9 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { Layout, Menu, Divider, ConfigProvider, Spin, BackTop } from "antd";
+import { Layout, Menu, ConfigProvider, Spin, BackTop, Button, theme as antdTheme } from "antd";
 import zhCN from "antd/es/locale/zh_CN";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
 import "./App.css";
 
@@ -23,6 +24,23 @@ const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const { Header, Content, Footer } = Layout;
+
+// 主题配置
+const lightTheme = {
+  algorithm: antdTheme.defaultAlgorithm,
+  token: {
+    colorPrimary: "#1890ff",
+    borderRadius: 6,
+  },
+};
+
+const darkTheme = {
+  algorithm: antdTheme.darkAlgorithm,
+  token: {
+    colorPrimary: "#177ddc",
+    borderRadius: 6,
+  },
+};
 
 // 错误边界组件
 class ErrorBoundary extends React.Component {
@@ -60,11 +78,9 @@ const PageLoader = () => (
   </div>
 );
 
-// 创建一个新的导航组件
-function Navigation() {
+// 导航组件
+function Navigation({ isDark, toggleTheme }) {
   const location = useLocation();
-
-  // 移动端隐藏部分菜单项，简化导航
   const isMobile = window.innerWidth < 768;
 
   const items = [
@@ -82,26 +98,80 @@ function Navigation() {
   }
 
   return (
-    <Menu
-      theme="dark"
-      mode="horizontal"
-      selectedKeys={[location.pathname]}
-      items={items}
-    />
+    <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
+      <Menu
+        theme="dark"
+        mode="horizontal"
+        selectedKeys={[location.pathname]}
+        items={items}
+        style={{ flex: 1, minWidth: 0, borderBottom: "none" }}
+      />
+      <Button
+        type="text"
+        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+        onClick={toggleTheme}
+        style={{ color: "#fff", fontSize: 16 }}
+        title={isDark ? "切换到亮色模式" : "切换到暗色模式"}
+      />
+    </div>
   );
 }
 
 function App() {
+  // 从 localStorage 读取主题偏好，默认跟从系统
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem("theme");
+    if (saved) return saved === "dark";
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches || false;
+  });
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev;
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
+  // 监听系统主题变化
+  useEffect(() => {
+    const handler = (e) => {
+      // 仅当用户没有手动设置过主题时才跟随系统
+      if (!localStorage.getItem("theme")) {
+        setIsDark(e.matches);
+      }
+    };
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  const currentTheme = isDark ? darkTheme : lightTheme;
+
   return (
-    <ConfigProvider locale={zhCN}>
+    <ConfigProvider locale={zhCN} theme={currentTheme}>
       <Router>
-        <Layout className="layout" style={{ minHeight: "100vh" }}>
-          <Header>
+        <Layout
+          className="layout"
+          style={{
+            minHeight: "100vh",
+            background: isDark ? "#141414" : undefined,
+          }}
+        >
+          <Header style={{ display: "flex", alignItems: "center", padding: "0 24px" }}>
             <div className="logo">日中汉字对照查询系统</div>
-            <Navigation />
+            <Navigation isDark={isDark} toggleTheme={toggleTheme} />
           </Header>
           <Content style={{ padding: "0 50px", marginTop: 20 }}>
-            <div className="site-layout-content" style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <div
+              className="site-layout-content"
+              style={{
+                maxWidth: 1200,
+                margin: "0 auto",
+                background: isDark ? "#1f1f1f" : "#fff",
+                borderRadius: 8,
+              }}
+            >
               <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -119,7 +189,13 @@ function App() {
               </ErrorBoundary>
             </div>
           </Content>
-          <Footer style={{ textAlign: "center" }}>
+          <Footer
+            style={{
+              textAlign: "center",
+              background: isDark ? "#141414" : undefined,
+              color: isDark ? "#666" : undefined,
+            }}
+          >
             日中汉字对照查询系统 ©{new Date().getFullYear()} Created with React
           </Footer>
           <BackTop style={{ right: 24, bottom: 24 }} />

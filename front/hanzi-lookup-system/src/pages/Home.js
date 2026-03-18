@@ -121,7 +121,7 @@ function Home() {
               justifyContent: "space-between",
             }}
           >
-            <Text type="secondary">例如：爱、愛、あい、ai</Text>
+            <Text type="secondary">例如：愛（日语）、爱（中文）、あい（假名）、ai（拼音）</Text>
             <Link to="/search">
               <Text type="secondary">
                 高级搜索 <ArrowRightOutlined />
