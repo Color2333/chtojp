@@ -12,6 +12,7 @@ import {
   Button,
   message,
   Progress,
+  Space,
 } from "antd";
 import {
   BarChartOutlined,
@@ -20,6 +21,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   QuestionCircleOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import {
   PieChart,
@@ -39,55 +41,43 @@ import api from "../services/api";
 
 const { Title, Paragraph } = Typography;
 
-// Custom colors for charts
+// 现代化配色方案
 const COLORS = [
-  "#1890ff",
-  "#52c41a",
-  "#faad14",
-  "#f5222d",
-  "#722ed1",
-  "#13c2c2",
-  "#eb2f96",
+  "#3b82f6", // 蓝色
+  "#10b981", // 绿色
+  "#f59e0b", // 橙色
+  "#ef4444", // 红色
+  "#8b5cf6", // 紫色
+  "#06b6d4", // 青色
+  "#ec4899", // 粉色
 ];
 
 function Stats() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [chartSizes, setChartSizes] = useState({});
-  const chartRefs = {
-    level: useRef(null),
-    match: useRef(null),
-    kana: useRef(null),
-  };
+  const [containerWidth, setContainerWidth] = useState(0);
+  const chartContainerRef = useRef(null);
 
   useEffect(() => {
     fetchStats();
   }, []);
 
   useLayoutEffect(() => {
-    const updateSizes = () => {
-      const newSizes = {};
-      Object.entries(chartRefs).forEach(([key, ref]) => {
-        if (ref.current) {
-          newSizes[key] = {
-            width: ref.current.offsetWidth,
-            height: 300,
-          };
-        }
-      });
-      setChartSizes(newSizes);
+    const updateWidth = () => {
+      if (chartContainerRef.current) {
+        setContainerWidth(chartContainerRef.current.offsetWidth);
+      }
     };
 
-    updateSizes();
-    window.addEventListener("resize", updateSizes);
-    return () => window.removeEventListener("resize", updateSizes);
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
       const data = await api.getStats();
-      console.log("Stats data:", data);
       setStats(data);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -97,7 +87,6 @@ function Stats() {
     }
   };
 
-  // Prepare chart data from stats
   const prepareLevelChartData = (levelCounts) => {
     if (!levelCounts || typeof levelCounts !== "object") return [];
     return Object.entries(levelCounts).map(([level, count], index) => ({
@@ -111,38 +100,32 @@ function Stats() {
     if (!formMatches || typeof formMatches !== "object") return [];
 
     const data = [];
-
     if (formMatches["一致"]) {
       data.push({
         name: "字体一致",
         value: formMatches["一致"],
-        fill: "#52c41a",
+        fill: "#10b981",
       });
     }
-
     if (formMatches["不一致"]) {
       data.push({
         name: "字体不一致",
         value: formMatches["不一致"],
-        fill: "#faad14",
+        fill: "#f59e0b",
       });
     }
-
     if (formMatches["未知"]) {
       data.push({
         name: "未标记",
         value: formMatches["未知"],
-        fill: "#d9d9d9",
+        fill: "#94a3b8",
       });
     }
-
     return data;
   };
 
   const prepareKanaGroupData = (kanaGroups) => {
     if (!kanaGroups || typeof kanaGroups !== "object") return [];
-
-    // Only include top groups for cleaner visualization
     const sortedGroups = Object.entries(kanaGroups)
       .filter(([group, count]) => group && count)
       .sort((a, b) => b[1] - a[1])
@@ -157,9 +140,11 @@ function Stats() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: 100 }}>
+      <div style={{ textAlign: "center", padding: 80 }}>
         <Spin size="large" />
-        <p style={{ marginTop: 16 }}>加载数据库统计信息中...</p>
+        <p style={{ marginTop: 16, color: "var(--color-text-tertiary)" }}>
+          加载数据库统计信息中...
+        </p>
       </div>
     );
   }
@@ -179,7 +164,6 @@ function Stats() {
   const matchData = prepareMatchChartData(stats.form_matches || {});
   const kanaGroupData = prepareKanaGroupData(stats.kana_groups || {});
 
-  // Calculate percentages for form matches
   const totalCharacters = stats.total_characters || 0;
   const matchPercentage =
     matchData.length > 0
@@ -193,20 +177,15 @@ function Stats() {
   const renderChart = (chartKey, ChartComponent, chartData, chartProps) => {
     if (!chartData || chartData.length === 0) {
       return (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <p>暂无数据</p>
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          <p style={{ color: "var(--color-text-tertiary)" }}>暂无数据</p>
         </div>
       );
     }
 
-    const size = chartSizes[chartKey];
-    if (!size || size.width === 0) {
-      return <div style={{ height: "300px" }} />;
-    }
-
     return (
-      <div ref={chartRefs[chartKey]} style={{ width: "100%", height: "300px" }}>
-        <ResponsiveContainer width={size.width} height={size.height}>
+      <div style={{ width: "100%", height: 300 }}>
+        <ResponsiveContainer width="100%" height="100%">
           <ChartComponent {...chartProps} />
         </ResponsiveContainer>
       </div>
@@ -214,69 +193,96 @@ function Stats() {
   };
 
   return (
-    <div className="stats-container" style={{ padding: "24px" }}>
-      <Title level={2}>数据库统计</Title>
-      <Paragraph>
-        该页面展示数据库中汉字的各项统计信息，包括总量、级别分布、字体一致性等。
-      </Paragraph>
+    <div className="stats-container" ref={chartContainerRef}>
+      {/* 页面标题 */}
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ marginBottom: 8 }}>
+          数据库统计
+        </Title>
+        <Paragraph style={{ color: "var(--color-text-secondary)", marginBottom: 0 }}>
+          展示数据库中汉字的各项统计信息，包括总量、级别分布、字体一致性等
+        </Paragraph>
+      </div>
 
-      <Row gutter={[24, 24]}>
-        <Col xs={24} md={8}>
-          <Card>
+      {/* 统计卡片 */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={8}>
+          <Card className="hover-lift">
             <Statistic
-              title="数据库总汉字数"
+              title={
+                <span style={{ color: "var(--color-text-secondary)" }}>
+                  总汉字数
+                </span>
+              }
               value={stats?.total_characters || 0}
-              prefix={<FileTextOutlined />}
-              valueStyle={{ color: "#1890ff" }}
+              prefix={<FileTextOutlined style={{ color: "#3b82f6" }} />}
+              valueStyle={{
+                color: "#3b82f6",
+                fontWeight: 700,
+                fontSize: 32,
+              }}
             />
           </Card>
         </Col>
 
-        <Col xs={24} md={8}>
-          <Card>
+        <Col xs={24} sm={8}>
+          <Card className="hover-lift">
             <div style={{ textAlign: "center" }}>
               <Progress
                 type="dashboard"
                 percent={matchPercentage}
-                format={(percent) => `${percent}%`}
-                strokeColor="#52c41a"
+                format={(percent) => (
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#10b981" }}>
+                    {percent}%
+                  </span>
+                )}
+                strokeColor={{
+                  "0%": "#10b981",
+                  "100%": "#06b6d4",
+                }}
+                trailColor="var(--color-border-light)"
+                size={120}
               />
-              <div style={{ marginTop: 16 }}>字体一致率</div>
+              <div style={{ marginTop: 16, color: "var(--color-text-secondary)" }}>
+                字体一致率
+              </div>
             </div>
           </Card>
         </Col>
 
-        <Col xs={24} md={8}>
-          <Card>
-            <Row justify="space-between">
-              <Col span={12}>
+        <Col xs={24} sm={8}>
+          <Card className="hover-lift">
+            <Row justify="space-around" align="middle">
+              <Col span={11}>
                 <Statistic
                   title={
-                    <span>
-                      <CheckCircleOutlined style={{ color: "#52c41a" }} />{" "}
-                      字体一致
-                    </span>
+                    <Space size={4}>
+                      <CheckCircleOutlined style={{ color: "#10b981" }} />
+                      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
+                        一致
+                      </span>
+                    </Space>
                   }
                   value={
-                    matchData.find((item) => item.name === "字体一致")?.value ||
-                    0
+                    matchData.find((item) => item.name === "字体一致")?.value || 0
                   }
-                  valueStyle={{ color: "#52c41a" }}
+                  valueStyle={{ color: "#10b981", fontWeight: 600 }}
                 />
               </Col>
-              <Col span={12}>
+              <Col span={11}>
                 <Statistic
                   title={
-                    <span>
-                      <CloseCircleOutlined style={{ color: "#faad14" }} />{" "}
-                      字体不一致
-                    </span>
+                    <Space size={4}>
+                      <CloseCircleOutlined style={{ color: "#f59e0b" }} />
+                      <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>
+                        不一致
+                      </span>
+                    </Space>
                   }
                   value={
-                    matchData.find((item) => item.name === "字体不一致")
-                      ?.value || 0
+                    matchData.find((item) => item.name === "字体不一致")?.value || 0
                   }
-                  valueStyle={{ color: "#faad14" }}
+                  valueStyle={{ color: "#f59e0b", fontWeight: 600 }}
                 />
               </Col>
             </Row>
@@ -284,27 +290,31 @@ function Stats() {
         </Col>
       </Row>
 
-      <Divider orientation="left">级别分布</Divider>
+      {/* 级别分布 */}
+      <Divider orientation="left" style={{ margin: "32px 0 24px" }}>
+        级别分布
+      </Divider>
 
-      <Row gutter={[24, 24]}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} lg={12}>
           <Card
+            className="hover-lift"
             title={
-              <>
-                <BarChartOutlined /> 各级别汉字数量
-              </>
+              <Space>
+                <BarChartOutlined style={{ color: "#3b82f6" }} />
+                <span>各级别汉字数量</span>
+              </Space>
             }
           >
             {renderChart("level", BarChart, levelData, {
               data: levelData,
               margin: { top: 20, right: 30, left: 20, bottom: 5 },
               children: [
-                <CartesianGrid strokeDasharray="3 3" key="grid" />,
-                <XAxis dataKey="name" key="x" />,
-                <YAxis key="y" />,
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" key="grid" />,
+                <XAxis dataKey="name" key="x" style={{ fontSize: 12 }} />,
+                <YAxis key="y" style={{ fontSize: 12 }} />,
                 <Tooltip key="tooltip" />,
-                <Legend key="legend" />,
-                <Bar dataKey="value" name="汉字数量" key="bar">
+                <Bar dataKey="value" name="汉字数量" key="bar" radius={[4, 4, 0, 0]}>
                   {levelData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
@@ -316,10 +326,12 @@ function Stats() {
 
         <Col xs={24} lg={12}>
           <Card
+            className="hover-lift"
             title={
-              <>
-                <PieChartOutlined /> 字体一致性分布
-              </>
+              <Space>
+                <PieChartOutlined style={{ color: "#8b5cf6" }} />
+                <span>字体一致性分布</span>
+              </Space>
             }
           >
             {renderChart("match", PieChart, matchData, {
@@ -329,7 +341,7 @@ function Stats() {
                   data={matchData}
                   cx="50%"
                   cy="50%"
-                  labelLine={true}
+                  labelLine={false}
                   label={({ name, percent }) =>
                     `${name}: ${(percent * 100).toFixed(0)}%`
                   }
@@ -343,29 +355,38 @@ function Stats() {
                 </RechartsPie>,
                 <Tooltip
                   key="tooltip"
-                  formatter={(value) => [`${value} 个汉字`, "数量"]}
+                  formatter={(value) => [`${value} 个`, "数量"]}
                 />,
-                <Legend key="legend" />,
               ],
             })}
           </Card>
         </Col>
       </Row>
 
-      <Divider orientation="left">五十音分组</Divider>
+      {/* 五十音分组 */}
+      <Divider orientation="left" style={{ margin: "32px 0 24px" }}>
+        五十音分组
+      </Divider>
 
-      <Card title="各五十音分组汉字数量 (Top 10)">
+      <Card
+        className="hover-lift"
+        title={
+          <Space>
+            <BarChartOutlined style={{ color: "#06b6d4" }} />
+            <span>各五十音分组汉字数量 (Top 10)</span>
+          </Space>
+        }
+      >
         {renderChart("kana", BarChart, kanaGroupData, {
           data: kanaGroupData,
           layout: "vertical",
-          margin: { top: 20, right: 30, left: 40, bottom: 5 },
+          margin: { top: 20, right: 30, left: 60, bottom: 5 },
           children: [
-            <CartesianGrid strokeDasharray="3 3" key="grid" />,
-            <XAxis type="number" key="x" />,
-            <YAxis dataKey="name" type="category" key="y" />,
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" key="grid" />,
+            <XAxis type="number" key="x" style={{ fontSize: 12 }} />,
+            <YAxis dataKey="name" type="category" key="y" style={{ fontSize: 12 }} width={50} />,
             <Tooltip key="tooltip" />,
-            <Legend key="legend" />,
-            <Bar dataKey="count" name="汉字数量" key="bar">
+            <Bar dataKey="count" name="汉字数量" key="bar" radius={[0, 4, 4, 0]}>
               {kanaGroupData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
@@ -374,8 +395,14 @@ function Stats() {
         })}
       </Card>
 
-      <div style={{ marginTop: 24, textAlign: "center" }}>
-        <Button type="primary" onClick={fetchStats}>
+      {/* 操作按钮 */}
+      <div style={{ marginTop: 32, textAlign: "center" }}>
+        <Button
+          type="primary"
+          icon={<ReloadOutlined />}
+          onClick={fetchStats}
+          size="large"
+        >
           刷新统计数据
         </Button>
       </div>

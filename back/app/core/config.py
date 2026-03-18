@@ -5,8 +5,8 @@ import os
 import json
 from typing import Optional, Dict, Any, List
 from datetime import timedelta
-from pydantic import BaseModel, field_validator
-from pydantic_settings import BaseSettings
+from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     """应用配置"""
@@ -53,9 +53,11 @@ class Settings(BaseSettings):
         """返回访问令牌过期时间"""
         return timedelta(minutes=self.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        env_ignore_empty=True
+    )
 
 # 全局设置实例
 settings = Settings()

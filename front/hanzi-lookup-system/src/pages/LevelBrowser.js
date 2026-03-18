@@ -14,11 +14,13 @@ import {
   Empty,
   message,
   Pagination,
+  Badge,
+  Space,
 } from "antd";
-import { BookOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { BookOutlined, ArrowLeftOutlined, FolderOutlined } from "@ant-design/icons";
 import api from "../services/api";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
 function LevelBrowser() {
@@ -92,9 +94,21 @@ function LevelBrowser() {
       title: "日语汉字",
       dataIndex: "japanese_kanji",
       key: "japanese_kanji",
+      width: 100,
       render: (text, record) => (
         <Link to={`/character/${record.id}`}>
-          <span style={{ fontSize: "24px", fontWeight: "bold" }}>{text}</span>
+          <span
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {text}
+          </span>
         </Link>
       ),
     },
@@ -102,9 +116,21 @@ function LevelBrowser() {
       title: "中文汉字",
       dataIndex: "chinese_hanzi",
       key: "chinese_hanzi",
+      width: 100,
       render: (text, record) => (
         <Link to={`/character/${record.id}`}>
-          <span style={{ fontSize: "24px", fontWeight: "bold" }}>{text}</span>
+          <span
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {text}
+          </span>
         </Link>
       ),
     },
@@ -112,36 +138,53 @@ function LevelBrowser() {
       title: "字体",
       dataIndex: "forms_match",
       key: "forms_match",
+      width: 90,
+      responsive: ["md"],
       render: (match) =>
         match === true ? (
-          <Tag color="green">一致</Tag>
+          <Tag color="success" style={{ borderRadius: 12 }}>
+            一致
+          </Tag>
         ) : match === false ? (
-          <Tag color="orange">不一致</Tag>
+          <Tag color="warning" style={{ borderRadius: 12 }}>
+            不一致
+          </Tag>
         ) : (
-          <Tag color="default">未知</Tag>
+          <Tag style={{ borderRadius: 12 }}>未知</Tag>
         ),
     },
     {
       title: "音读み",
       dataIndex: "on_readings",
       key: "on_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["lg"],
+      render: (readings) => readings || "—",
     },
     {
       title: "训读み",
       dataIndex: "kun_readings",
       key: "kun_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["lg"],
+      render: (readings) => readings || "—",
     },
     {
       title: "中文拼音",
       dataIndex: "chinese_readings",
       key: "chinese_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["md"],
+      render: (readings) => readings || "—",
     },
     {
       title: "操作",
       key: "action",
+      width: 85,
+      fixed: "right",
       render: (_, record) => (
         <Link to={`/character/${record.id}`}>
           <Button type="primary" size="small">
@@ -152,27 +195,42 @@ function LevelBrowser() {
     },
   ];
 
+  // 快速级别选择
+  const quickLevels = [
+    { name: "一级汉字", color: "#ef4444" },
+    { name: "二级汉字", color: "#f59e0b" },
+    { name: "三级汉字", color: "#10b981" },
+    { name: "四级汉字", color: "#3b82f6" },
+  ];
+
   return (
     <div className="level-browser-container">
+      {/* 返回按钮 */}
       <div style={{ marginBottom: 16 }}>
         <Link to="/">
           <Button icon={<ArrowLeftOutlined />}>返回首页</Button>
         </Link>
       </div>
 
-      <Title level={2}>按级别浏览汉字</Title>
-      <Paragraph>
-        选择级别查看对应的汉字列表。级别通常按照日本汉字能力考试（JLPT）或中小学教育阶段划分。
-      </Paragraph>
+      {/* 页面标题 */}
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ marginBottom: 8 }}>
+          按级别浏览汉字
+        </Title>
+        <Paragraph style={{ color: "var(--color-text-secondary)", marginBottom: 0 }}>
+          选择级别查看对应的汉字列表。级别通常按照日本汉字能力考试（JLPT）或中小学教育阶段划分。
+        </Paragraph>
+      </div>
 
-      <Card style={{ marginBottom: 24 }}>
+      {/* 级别选择卡片 */}
+      <Card className="hover-lift" style={{ marginBottom: 24 }}>
         <Row gutter={16} align="middle">
-          <Col span={24}>
+          <Col xs={24} md={12}>
             <div style={{ display: "flex", alignItems: "center" }}>
-              <BookOutlined style={{ marginRight: 8, fontSize: 18 }} />
-              <span style={{ marginRight: 16 }}>选择级别:</span>
+              <FolderOutlined style={{ marginRight: 12, fontSize: 20, color: "var(--color-primary)" }} />
+              <span style={{ marginRight: 16, fontWeight: 500 }}>选择级别:</span>
               <Select
-                style={{ width: 200 }}
+                style={{ width: 220 }}
                 value={selectedLevel}
                 onChange={handleLevelChange}
                 placeholder="请选择级别"
@@ -187,21 +245,50 @@ function LevelBrowser() {
               </Select>
             </div>
           </Col>
+          <Col xs={24} md={12} style={{ marginTop: 16 }} className="level-browser-margin-top">
+            {/* 快速级别选择 */}
+            <Space wrap>
+              <Text type="secondary" style={{ fontSize: 13 }}>快速选择:</Text>
+              {quickLevels.map((lvl) => (
+                <Link to={`/level/${lvl.name}`} key={lvl.name}>
+                  <Tag
+                    style={{
+                      borderRadius: 16,
+                      padding: "4px 12px",
+                      cursor: "pointer",
+                      borderLeft: `3px solid ${lvl.color}`,
+                    }}
+                  >
+                    {lvl.name}
+                  </Tag>
+                </Link>
+              ))}
+            </Space>
+          </Col>
         </Row>
       </Card>
 
+      {/* 结果区域 */}
       {selectedLevel ? (
         loading ? (
-          <div style={{ textAlign: "center", padding: 50 }}>
-            <Spin size="large" />
-            <p style={{ marginTop: 16 }}>加载{selectedLevel}汉字中...</p>
-          </div>
+          <Card>
+            <div style={{ textAlign: "center", padding: 60 }}>
+              <Spin size="large" />
+              <p style={{ marginTop: 16, color: "var(--color-text-tertiary)" }}>
+                加载{selectedLevel}汉字中...
+              </p>
+            </div>
+          </Card>
         ) : characters.length > 0 ? (
           <>
+            {/* 结果统计 */}
             <div style={{ marginBottom: 16 }}>
-              <Title level={4}>
-                {selectedLevel}（共 {totalResults} 个）
-              </Title>
+              <Space>
+                <Badge count={totalResults} style={{ backgroundColor: "var(--color-primary)" }} />
+                <Text>
+                  <Text strong style={{ color: "var(--color-primary)" }}>{selectedLevel}</Text> 汉字列表
+                </Text>
+              </Space>
             </div>
 
             <Table
@@ -209,12 +296,13 @@ function LevelBrowser() {
               columns={columns}
               rowKey="id"
               pagination={false}
-              bordered
-              scroll={{ x: true }}
+              scroll={{ x: 750 }}
+              size="middle"
             />
 
+            {/* 分页 */}
             {totalResults > pageSize && (
-              <div style={{ textAlign: "right", marginTop: 16 }}>
+              <div style={{ textAlign: "right", marginTop: 24 }}>
                 <Pagination
                   current={currentPage}
                   pageSize={pageSize}
@@ -223,16 +311,26 @@ function LevelBrowser() {
                   showSizeChanger
                   showQuickJumper
                   showTotal={(total) => `共 ${total} 条结果`}
+                  pageSizeOptions={[10, 20, 50, 100]}
                 />
               </div>
             )}
           </>
         ) : (
-          <Empty description={`没有找到${selectedLevel}的汉字`} />
+          <Card>
+            <Empty
+              description={`没有找到${selectedLevel}的汉字`}
+              style={{ padding: "60px 0" }}
+            />
+          </Card>
         )
       ) : (
         <Card>
-          <Empty description="请先选择一个级别" />
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="请先选择一个级别"
+            style={{ padding: "60px 0" }}
+          />
         </Card>
       )}
     </div>

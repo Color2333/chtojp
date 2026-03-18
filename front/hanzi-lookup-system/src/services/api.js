@@ -1,7 +1,8 @@
 // src/services/api.js
 import axios from "axios";
 
-const API_BASE_URL = "/api"; // 使用相对路径，让 Nginx 代理处理
+// 始终使用完整 URL 连接后端（开发和本地测试）
+const API_BASE_URL = "http://localhost:8000/api";
 
 // localStorage 键名
 const ADMIN_TOKEN_KEY = "admin_jwt_token";

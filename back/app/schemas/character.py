@@ -6,7 +6,7 @@ API数据结构定义
 """
 
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class CharacterBase(BaseModel):
@@ -26,8 +26,8 @@ class CharacterDetail(CharacterBase):
     kun_readings: Optional[str] = Field(None, description="训读み")
     chinese_readings: Optional[str] = Field(None, description="中文读音")
     
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "0001",
                 "japanese_kanji": "愛",
@@ -41,6 +41,7 @@ class CharacterDetail(CharacterBase):
                 "chinese_readings": "ài"
             }
         }
+    )
 
 
 class SearchParams(BaseModel):
@@ -50,8 +51,8 @@ class SearchParams(BaseModel):
     limit: Optional[int] = Field(20, description="结果数量限制", ge=1, le=100)
     offset: Optional[int] = Field(0, description="结果偏移量", ge=0)
     
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "q": "愛",
                 "lang": "ja",
@@ -59,6 +60,7 @@ class SearchParams(BaseModel):
                 "offset": 0
             }
         }
+    )
 
 
 class PaginationParams(BaseModel):
@@ -72,8 +74,8 @@ class SearchResult(BaseModel):
     total: int = Field(..., description="总结果数")
     items: List[CharacterDetail] = Field(..., description="汉字列表")
     
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "total": 5,
                 "items": [
@@ -92,6 +94,7 @@ class SearchResult(BaseModel):
                 ]
             }
         }
+    )
 
 
 class DatabaseStats(BaseModel):
@@ -101,8 +104,8 @@ class DatabaseStats(BaseModel):
     form_matches: Dict[str, int] = Field(..., description="字体一致统计")
     kana_groups: Dict[str, int] = Field(..., description="五十音分组统计")
     
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "total_characters": 2139,
                 "level_counts": {
@@ -123,3 +126,4 @@ class DatabaseStats(BaseModel):
                 }
             }
         }
+    )

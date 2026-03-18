@@ -11,6 +11,7 @@ import { Layout, Menu, ConfigProvider, Spin, BackTop, Button, theme as antdTheme
 import zhCN from "antd/es/locale/zh_CN";
 import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import "antd/dist/reset.css";
+import "./styles/modern-theme.css";
 import "./App.css";
 
 // 懒加载页面组件
@@ -25,20 +26,110 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const { Header, Content, Footer } = Layout;
 
-// 主题配置
+// 主题配置 - 现代化配色
 const lightTheme = {
   algorithm: antdTheme.defaultAlgorithm,
   token: {
-    colorPrimary: "#1890ff",
-    borderRadius: 6,
+    colorPrimary: "#3b82f6",
+    colorSuccess: "#10b981",
+    colorWarning: "#f59e0b",
+    colorError: "#ef4444",
+    colorInfo: "#06b6d4",
+    borderRadius: 8,
+    borderRadiusLG: 12,
+    borderRadiusSM: 6,
+    fontSize: 14,
+    fontSizeHeading1: 32,
+    fontSizeHeading2: 28,
+    fontSizeHeading3: 24,
+    fontSizeHeading4: 20,
+    fontSizeHeading5: 16,
+  },
+  components: {
+    Layout: {
+      headerBg: "#0f172a",
+      headerHeight: 64,
+    },
+    Menu: {
+      itemBg: "transparent",
+      itemSelectedBg: "rgba(59, 130, 246, 0.15)",
+      itemSelectedColor: "#60a5fa",
+      itemHoverBg: "rgba(255, 255, 255, 0.08)",
+    },
+    Card: {
+      colorBgContainer: "#ffffff",
+      colorBorderSecondary: "#e2e8f0",
+    },
+    Button: {
+      controlHeight: 40,
+      controlHeightLG: 48,
+      borderRadius: 8,
+    },
+    Input: {
+      borderRadius: 8,
+      controlHeight: 40,
+      controlHeightLG: 48,
+      colorBgContainer: "#ffffff",
+      colorBorder: "#e2e8f0",
+    },
+    Table: {
+      colorBgContainer: "#ffffff",
+      headerColor: "#475569",
+      headerSplitColor: "#e2e8f0",
+    },
   },
 };
 
 const darkTheme = {
   algorithm: antdTheme.darkAlgorithm,
   token: {
-    colorPrimary: "#177ddc",
-    borderRadius: 6,
+    colorPrimary: "#60a5fa",
+    colorSuccess: "#34d399",
+    colorWarning: "#fbbf24",
+    colorError: "#f87171",
+    colorInfo: "#22d3ee",
+    borderRadius: 8,
+    borderRadiusLG: 12,
+    borderRadiusSM: 6,
+    fontSize: 14,
+    fontSizeHeading1: 32,
+    fontSizeHeading2: 28,
+    fontSizeHeading3: 24,
+    fontSizeHeading4: 20,
+    fontSizeHeading5: 16,
+  },
+  components: {
+    Layout: {
+      headerBg: "#0a0a0a",
+      headerHeight: 64,
+    },
+    Menu: {
+      itemBg: "transparent",
+      itemSelectedBg: "rgba(96, 165, 250, 0.15)",
+      itemSelectedColor: "#60a5fa",
+      itemHoverBg: "rgba(255, 255, 255, 0.06)",
+    },
+    Card: {
+      colorBgContainer: "#1a1a1a",
+      colorBorderSecondary: "#262626",
+    },
+    Button: {
+      controlHeight: 40,
+      controlHeightLG: 48,
+      borderRadius: 8,
+    },
+    Input: {
+      borderRadius: 8,
+      controlHeight: 40,
+      controlHeightLG: 48,
+      colorBgContainer: "#1a1a1a",
+      colorBorder: "#262626",
+    },
+    Table: {
+      colorBgContainer: "#1a1a1a",
+      headerColor: "#cbd5e1",
+      headerSplitColor: "#262626",
+    },
   },
 };
 
@@ -83,34 +174,52 @@ function Navigation({ isDark, toggleTheme }) {
   const location = useLocation();
   const isMobile = window.innerWidth < 768;
 
+  const menuLinkStyle = {
+    color: isDark ? "#cbd5e1" : "#475569",
+    transition: "color 0.2s",
+  };
+
   const items = [
-    { key: "/", label: <Link to="/">首页</Link> },
-    { key: "/search", label: <Link to="/search">搜索</Link> },
-    { key: "/levels", label: <Link to="/levels">级别</Link> },
+    { key: "/", label: <Link to="/" style={menuLinkStyle}>首页</Link> },
+    { key: "/search", label: <Link to="/search" style={menuLinkStyle}>搜索</Link> },
+    { key: "/levels", label: <Link to="/levels" style={menuLinkStyle}>级别</Link> },
   ];
 
   if (!isMobile) {
     items.push(
-      { key: "/stats", label: <Link to="/stats">统计</Link> },
-      { key: "/about", label: <Link to="/about">关于</Link> },
-      { key: "/admin", label: <Link to="/admin">管理</Link> },
+      { key: "/stats", label: <Link to="/stats" style={menuLinkStyle}>统计</Link> },
+      { key: "/about", label: <Link to="/about" style={menuLinkStyle}>关于</Link> },
+      { key: "/admin", label: <Link to="/admin" style={menuLinkStyle}>管理</Link> },
     );
   }
 
   return (
     <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
       <Menu
-        theme="dark"
         mode="horizontal"
         selectedKeys={[location.pathname]}
         items={items}
-        style={{ flex: 1, minWidth: 0, borderBottom: "none" }}
+        style={{
+          flex: 1,
+          minWidth: 0,
+          borderBottom: "none",
+          background: "transparent",
+        }}
+        // 覆盖 Menu 默认样式，确保文字颜色正确
+        className="header-navigation-menu"
       />
       <Button
         type="text"
         icon={isDark ? <SunOutlined /> : <MoonOutlined />}
         onClick={toggleTheme}
-        style={{ color: "#fff", fontSize: 16 }}
+        className="theme-toggle-btn"
+        style={{
+          color: isDark ? "#f1f5f9" : "#475569",
+          fontSize: 18,
+          padding: "8px 12px",
+          borderRadius: 8,
+          transition: "all 0.2s",
+        }}
         title={isDark ? "切换到亮色模式" : "切换到暗色模式"}
       />
     </div>
@@ -132,6 +241,12 @@ function App() {
       return next;
     });
   };
+
+  // 同步主题到 document.documentElement 的 data-theme 属性
+  // 这是 CSS 变量深色模式生效的关键
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
 
   // 监听系统主题变化
   useEffect(() => {
@@ -155,21 +270,56 @@ function App() {
           className="layout"
           style={{
             minHeight: "100vh",
-            background: isDark ? "#141414" : undefined,
+            background: isDark ? "#0a0a0a" : "#f8fafc",
           }}
         >
-          <Header style={{ display: "flex", alignItems: "center", padding: "0 24px" }}>
-            <div className="logo">日中汉字对照查询系统</div>
+          <Header
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "0 32px",
+              background: isDark ? "#0a0a0a" : "#ffffff",
+              borderBottom: isDark ? "1px solid #262626" : "1px solid #e2e8f0",
+              boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.05)",
+            }}
+          >
+            <div
+              className="logo"
+              style={{
+                fontWeight: 700,
+                fontSize: 18,
+                background: isDark
+                  ? "linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%)"
+                  : "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              日中汉字对照查询系统
+            </div>
             <Navigation isDark={isDark} toggleTheme={toggleTheme} />
           </Header>
-          <Content style={{ padding: "0 50px", marginTop: 20 }}>
+          <Content
+            style={{
+              padding: "0 24px",
+              marginTop: 24,
+              marginBottom: 24,
+              position: "relative",
+            }}
+          >
             <div
               className="site-layout-content"
               style={{
                 maxWidth: 1200,
                 margin: "0 auto",
-                background: isDark ? "#1f1f1f" : "#fff",
-                borderRadius: 8,
+                background: isDark ? "#1a1a1a" : "#ffffff",
+                borderRadius: 16,
+                boxShadow: isDark
+                  ? "0 4px 6px -1px rgb(0 0 0 / 0.4)"
+                  : "0 4px 6px -1px rgb(0 0 0 / 0.05)",
+                border: isDark ? "1px solid #262626" : "1px solid #e2e8f0",
+                overflow: "hidden",
               }}
             >
               <ErrorBoundary>
@@ -192,13 +342,29 @@ function App() {
           <Footer
             style={{
               textAlign: "center",
-              background: isDark ? "#141414" : undefined,
-              color: isDark ? "#666" : undefined,
+              background: isDark ? "#0a0a0a" : "#ffffff",
+              borderTop: isDark ? "1px solid #262626" : "1px solid #e2e8f0",
+              color: isDark ? "#64748b" : "#94a3b8",
+              padding: "20px 24px",
             }}
           >
-            日中汉字对照查询系统 ©{new Date().getFullYear()} Created with React
+            <span style={{ color: isDark ? "#94a3b8" : "#475569" }}>
+              日中汉字对照查询系统 ©{new Date().getFullYear()}
+            </span>
+            {" · "}
+            <span style={{ color: isDark ? "#60a5fa" : "#3b82f6" }}>
+              Built with React + Ant Design
+            </span>
           </Footer>
-          <BackTop style={{ right: 24, bottom: 24 }} />
+          <BackTop
+            style={{
+              right: 24,
+              bottom: 24,
+              background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+              border: "none",
+              borderRadius: 8,
+            }}
+          />
         </Layout>
       </Router>
     </ConfigProvider>

@@ -150,6 +150,14 @@ def init_db():
         FOREIGN KEY (character_id) REFERENCES characters(id)
     )
     ''')
+
+    cursor.execute('''
+    CREATE TABLE hot_searches (
+        search_term TEXT PRIMARY KEY,
+        search_count INTEGER DEFAULT 1,
+        last_searched TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
     
     # 创建索引
     cursor.execute('CREATE INDEX idx_japanese_kanji ON characters(japanese_kanji)')

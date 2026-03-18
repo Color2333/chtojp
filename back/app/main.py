@@ -2,6 +2,7 @@
 应用主入口文件
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
@@ -13,6 +14,20 @@ import os
 from app.api.routes import api_router
 from app.core.config import settings
 from app.core.database import init_db
+
+
+# ==================== 应用生命周期管理 ====================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """应用生命周期管理"""
+    # 启动时执行
+    print(f"API服务已启动 - 版本: {settings.VERSION}")
+    print(f"速率限制: 每分钟 {settings.RATE_LIMIT_PER_MINUTE} 次")
+    print(f"CORS允许来源: {', '.join(settings.CORS_ORIGINS)}")
+    yield
+    # 关闭时执行
+    print("API服务已关闭")
 
 # 初始化数据库
 init_db()
@@ -28,6 +43,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.PROJECT_DESCRIPTION,
     version=settings.VERSION,
+    lifespan=lifespan,
     # 关闭默认的/docs和/redoc路径
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -80,21 +96,8 @@ async def root():
         "redoc": "/api/redoc"
     }
 
-# 应用启动事件
-@app.on_event("startup")
-async def startup_event():
-    """应用启动时执行"""
-    print(f"API服务已启动 - 版本: {settings.VERSION}")
-    print(f"速率限制: 每分钟 {settings.RATE_LIMIT_PER_MINUTE} 次")
-    print(f"CORS允许来源: {', '.join(settings.CORS_ORIGINS)}")
 
-# 应用关闭事件
-@app.on_event("shutdown")
-async def shutdown_event():
-    """应用关闭时执行"""
-    print("API服务已关闭")
-
-# 程序入口
+# ==================== 程序入口 ====================
 if __name__ == "__main__":
     import uvicorn
 

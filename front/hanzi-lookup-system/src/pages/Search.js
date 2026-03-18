@@ -18,11 +18,13 @@ import {
   message,
   List,
   Skeleton,
+  Badge,
 } from "antd";
 import {
   SearchOutlined,
   LoadingOutlined,
   SyncOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 import api from "../services/api";
 
@@ -56,7 +58,7 @@ function SearchPage() {
 
   const fetchHotSearches = async () => {
     try {
-      const data = await api.getHotSearches(5);
+      const data = await api.getHotSearches(6);
       setHotSearches(data);
     } catch (error) {
       console.error("Error fetching hot searches:", error);
@@ -73,10 +75,7 @@ function SearchPage() {
     setSearched(true);
 
     try {
-      // Calculate offset
       const offset = (currentPage - 1) * pageSize;
-
-      // 记录搜索词
       await api.recordSearch(value.trim());
 
       const results = await api.searchCharacters(
@@ -88,7 +87,6 @@ function SearchPage() {
       setSearchResults(results.items);
       setTotalResults(results.total);
 
-      // Update URL without reloading
       const urlParams = new URLSearchParams();
       urlParams.set("q", value);
       urlParams.set("lang", lang);
@@ -106,7 +104,6 @@ function SearchPage() {
   const handlePageChange = (page, size) => {
     setCurrentPage(page);
     setPageSize(size);
-    // Re-run search with new pagination
     handleSearch(searchParams.get("q") || "", searchLang);
   };
 
@@ -124,9 +121,21 @@ function SearchPage() {
       title: "日语汉字",
       dataIndex: "japanese_kanji",
       key: "japanese_kanji",
+      width: 100,
       render: (text, record) => (
         <Link to={`/character/${record.id}`}>
-          <span style={{ fontSize: "24px", fontWeight: "bold" }}>{text}</span>
+          <span
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {text}
+          </span>
         </Link>
       ),
     },
@@ -134,9 +143,21 @@ function SearchPage() {
       title: "中文汉字",
       dataIndex: "chinese_hanzi",
       key: "chinese_hanzi",
+      width: 100,
       render: (text, record) => (
         <Link to={`/character/${record.id}`}>
-          <span style={{ fontSize: "24px", fontWeight: "bold" }}>{text}</span>
+          <span
+            style={{
+              fontSize: "24px",
+              fontWeight: 700,
+              background: "linear-gradient(135deg, #10b981 0%, #06b6d4 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {text}
+          </span>
         </Link>
       ),
     },
@@ -144,45 +165,72 @@ function SearchPage() {
       title: "字体",
       dataIndex: "forms_match",
       key: "forms_match",
+      width: 90,
+      responsive: ["md"],
       render: (match) =>
         match === true ? (
-          <Tag color="green">一致</Tag>
+          <Tag color="success" style={{ borderRadius: 12 }}>
+            一致
+          </Tag>
         ) : match === false ? (
-          <Tag color="orange">不一致</Tag>
+          <Tag color="warning" style={{ borderRadius: 12 }}>
+            不一致
+          </Tag>
         ) : (
-          <Tag color="default">未知</Tag>
+          <Tag style={{ borderRadius: 12 }}>未知</Tag>
         ),
     },
     {
       title: "级别",
       dataIndex: "level",
       key: "level",
-      render: (level) => level || "未标记",
+      width: 110,
+      responsive: ["sm"],
+      render: (level) => (
+        level ? (
+          <Tag color="blue" style={{ borderRadius: 12 }}>
+            {level}
+          </Tag>
+        ) : (
+          <Text type="secondary">未标记</Text>
+        )
+      ),
     },
     {
       title: "音读み",
       dataIndex: "on_readings",
       key: "on_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["lg"],
+      render: (readings) => readings || "—",
     },
     {
       title: "训读み",
       dataIndex: "kun_readings",
       key: "kun_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["lg"],
+      render: (readings) => readings || "—",
     },
     {
       title: "中文拼音",
       dataIndex: "chinese_readings",
       key: "chinese_readings",
-      render: (readings) => readings || "N/A",
+      width: 120,
+      ellipsis: { showTitle: false },
+      responsive: ["md"],
+      render: (readings) => readings || "—",
     },
     {
       title: "操作",
       key: "action",
+      width: 85,
+      fixed: "right",
       render: (_, record) => (
         <Link to={`/character/${record.id}`}>
-          <Button type="primary" size="small">
+          <Button type="primary" size="small" icon={<SearchOutlined />}>
             详情
           </Button>
         </Link>
@@ -192,12 +240,22 @@ function SearchPage() {
 
   return (
     <div className="search-container">
-      <Title level={2}>汉字搜索</Title>
-      <Paragraph>
-        输入汉字、读音（假名或拼音）进行搜索，查找日中汉字对应关系。
-      </Paragraph>
+      {/* 页面标题 */}
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ marginBottom: 8 }}>
+          汉字搜索
+        </Title>
+        <Paragraph style={{ color: "var(--color-text-secondary)", marginBottom: 0 }}>
+          输入汉字、读音（假名或拼音）进行搜索，查找日中汉字对应关系
+        </Paragraph>
+      </div>
 
-      <Card style={{ marginBottom: 24 }}>
+      {/* 搜索区域 */}
+      <Card
+        className="hover-lift"
+        style={{ marginBottom: 24 }}
+        bodyStyle={{ padding: 24 }}
+      >
         <Row gutter={16} align="middle">
           <Col flex="auto">
             <Search
@@ -230,90 +288,114 @@ function SearchPage() {
           </Col>
         </Row>
 
-        <div style={{ marginTop: 8 }}>
-          <Text type="secondary">
+        <div style={{ marginTop: 12 }}>
+          <Text type="secondary" style={{ fontSize: 13 }}>
             可以搜索汉字（如「愛」、「爱」）或读音（如「あい」、「ai」）
           </Text>
         </div>
+
+        {/* 热门搜索 */}
+        {hotSearches.length > 0 && !searched && (
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--color-border-light)" }}>
+            <Space wrap size={[8, 8]}>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                热门搜索：
+              </Text>
+              {hotSearches.map((item, index) => (
+                <Tag
+                  key={index}
+                  className="hot-search-tag"
+                  onClick={() => handleSearch(item.term, searchLang)}
+                >
+                  {item.term}
+                </Tag>
+              ))}
+            </Space>
+          </div>
+        )}
       </Card>
 
+      {/* 加载状态 */}
       {loading ? (
         <Card style={{ marginBottom: 24 }}>
-          <Skeleton active paragraph={{ rows: 5 }} />
-          <Skeleton active paragraph={{ rows: 5 }} />
-          <Skeleton active paragraph={{ rows: 3 }} />
+          <Skeleton active paragraph={{ rows: 6 }} />
+          <Skeleton active paragraph={{ rows: 6 }} />
+          <Skeleton active paragraph={{ rows: 4 }} />
         </Card>
       ) : searched ? (
-        searchResults.length > 0 ? (
-          <>
-            <div style={{ marginBottom: 16 }}>
-              <Text>找到相关结果 {totalResults} 个</Text>
+        <>
+          {/* 搜索结果统计 */}
+          {searchResults.length > 0 && (
+            <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Space>
+                <FilterOutlined style={{ color: "var(--color-primary)" }} />
+                <Text>
+                  找到 <Text strong style={{ color: "var(--color-primary)" }}>{totalResults}</Text> 个相关结果
+                </Text>
+              </Space>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                搜索词: <Badge count={searchParams.get("q")} style={{ backgroundColor: "var(--color-primary)" }} />
+              </Text>
             </div>
+          )}
 
-            <Table
-              dataSource={searchResults}
-              columns={columns}
-              rowKey="id"
-              pagination={false}
-              bordered
-              scroll={{ x: true }}
-            />
+          {/* 结果表格 */}
+          {searchResults.length > 0 ? (
+            <>
+              <Table
+                dataSource={searchResults}
+                columns={columns}
+                rowKey="id"
+                pagination={false}
+                scroll={{ x: 800 }}
+                size="middle"
+              />
 
-            {totalResults > pageSize && (
-              <div style={{ textAlign: "right", marginTop: 16 }}>
-                <Pagination
-                  current={currentPage}
-                  pageSize={pageSize}
-                  total={totalResults}
-                  onChange={handlePageChange}
-                  showSizeChanger
-                  showQuickJumper
-                  showTotal={(total) => `共 ${total} 条结果`}
-                />
-              </div>
-            )}
-          </>
-        ) : (
-          <Empty
-            description={
-              <span>
-                没有找到与 <Text strong>{searchParams.get("q")}</Text>{" "}
-                相关的结果
-              </span>
-            }
-          >
-            <Button
-              icon={<SyncOutlined />}
-              onClick={() =>
-                handleSearch(searchParams.get("q") || "", searchLang)
+              {/* 分页 */}
+              {totalResults > pageSize && (
+                <div style={{ textAlign: "right", marginTop: 24 }}>
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={totalResults}
+                    onChange={handlePageChange}
+                    showSizeChanger
+                    showQuickJumper
+                    showTotal={(total) => `共 ${total} 条结果`}
+                    pageSizeOptions={[10, 20, 50, 100]}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span>
+                  没有找到与 <Text strong style={{ color: "var(--color-primary)" }}>{searchParams.get("q")}</Text> 相关的结果
+                </span>
               }
+              style={{ padding: "60px 0" }}
             >
-              重试
-            </Button>
-          </Empty>
-        )
-      ) : null}
-
-      {/* 热门搜索 */}
-      {hotSearches.length > 0 && (
-        <div style={{ marginTop: 4, marginBottom: 8 }}>
-          <Text type="secondary" style={{ marginRight: 8 }}>
-            热门搜索：
-          </Text>
-          <Space wrap size={[4, 8]}>
-            {hotSearches.map((item, index) => (
               <Button
-                key={index}
-                type="link"
-                size="small"
-                style={{ padding: "0 4px" }}
-                onClick={() => handleSearch(item.term, searchLang)}
+                type="primary"
+                icon={<SyncOutlined />}
+                onClick={() => handleSearch(searchParams.get("q") || "", searchLang)}
               >
-                {item.term}
+                重新搜索
               </Button>
-            ))}
-          </Space>
-        </div>
+            </Empty>
+          )}
+        </>
+      ) : (
+        /* 初始状态提示 */
+        <Card style={{ textAlign: "center", padding: "60px 24px" }}>
+          <SearchOutlined style={{ fontSize: 64, color: "var(--color-border-base)", marginBottom: 24 }} />
+          <Title level={4} type="secondary">开始搜索</Title>
+          <Paragraph type="secondary">
+            在上方输入框中输入汉字或读音，点击搜索按钮开始查询
+          </Paragraph>
+        </Card>
       )}
     </div>
   );
