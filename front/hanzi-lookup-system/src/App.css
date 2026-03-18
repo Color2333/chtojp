@@ -1,0 +1,97 @@
+/* src/App.css */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.logo {
+  float: left;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 30px;
+}
+
+.site-layout-content {
+  min-height: 280px;
+  padding: 24px;
+  background: #fff;
+  margin-bottom: 24px;
+}
+
+/* Home Page */
+.home-container .hero-section {
+  padding: 20px 0;
+}
+
+.random-character .ant-card-body {
+  text-align: center;
+}
+
+.quick-links {
+  padding: 10px 0;
+}
+
+/* Character Detail Page */
+.character-detail-container .character-display {
+  margin-bottom: 30px;
+}
+
+/* Search Page */
+.search-container .ant-table-tbody > tr > td {
+  vertical-align: middle;
+}
+
+/* Level Browser Page */
+.level-browser-container .ant-select {
+  min-width: 200px;
+}
+
+/* Stats Page */
+.stats-container .ant-card {
+  margin-bottom: 10px;
+}
+
+/* About Page */
+.about-container .feature-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.about-container .feature-list li {
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo {
+    display: none;
+  }
+  
+  .site-layout-content {
+    padding: 16px;
+  }
+  
+  .character-display {
+    flex-direction: column;
+  }
+}
+
+/* Animation for character tiles */
+.character-display .ant-card {
+  transition: all 0.3s;
+}
+
+.character-display .ant-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom styles for tables */
+.ant-table-cell {
+  font-size: 14px;
+}

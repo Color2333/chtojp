@@ -1,0 +1,524 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "日中汉字互查API",
+        "description": "提供日语和中文汉字查询服务的RESTful API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/search": {
+            "get": {
+                "tags": [
+                    "search"
+                ],
+                "summary": "搜索汉字",
+                "description": "搜索汉字\n\n- **q**: 搜索关键词\n- **lang**: 搜索语言 (ja: 日语, cn: 中文)\n- **limit**: 结果数量限制 (1-100)\n- **offset**: 结果偏移量\n\n示例:\n- `/api/v1/search?q=愛&lang=ja` - 搜索日语汉字\"愛\"\n- `/api/v1/search?q=爱&lang=cn` - 搜索中文汉字\"爱\"\n- `/api/v1/search?q=アイ&lang=ja` - 搜索日语读音\"アイ\"\n- `/api/v1/search?q=ai&lang=cn` - 搜索中文拼音\"ai\"",
+                "operationId": "search_characters_api_v1_search_get",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "搜索关键词",
+                            "title": "Q"
+                        },
+                        "description": "搜索关键词"
+                    },
+                    {
+                        "name": "lang",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "搜索语言 (ja: 日语, cn: 中文)",
+                            "title": "Lang"
+                        },
+                        "description": "搜索语言 (ja: 日语, cn: 中文)"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "description": "结果数量限制",
+                            "default": 20,
+                            "title": "Limit"
+                        },
+                        "description": "结果数量限制"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "结果偏移量",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "结果偏移量"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResult"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/characters/{id}": {
+            "get": {
+                "tags": [
+                    "characters"
+                ],
+                "summary": "获取汉字详情",
+                "description": "获取指定ID的汉字详情\n\n- **id**: 汉字ID\n\n示例:\n- `/api/v1/characters/0001` - 获取ID为0001的汉字",
+                "operationId": "get_character_api_v1_characters__id__get",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "汉字ID",
+                            "title": "Id"
+                        },
+                        "description": "汉字ID"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CharacterDetail"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/characters/random": {
+            "get": {
+                "tags": [
+                    "characters"
+                ],
+                "summary": "获取随机汉字",
+                "description": "获取随机汉字\n\n示例:\n- `/api/v1/characters/random` - 获取随机汉字",
+                "operationId": "get_random_character_api_v1_characters_random_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CharacterDetail"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/characters/level/{level}": {
+            "get": {
+                "tags": [
+                    "characters"
+                ],
+                "summary": "按级别获取汉字",
+                "description": "获取指定级别的汉字\n\n- **level**: 汉字级别\n- **limit**: 结果数量限制 (1-100)\n- **offset**: 结果偏移量\n\n示例:\n- `/api/v1/characters/level/一级汉字` - 获取一级汉字",
+                "operationId": "get_characters_by_level_api_v1_characters_level__level__get",
+                "parameters": [
+                    {
+                        "name": "level",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "description": "汉字级别",
+                            "title": "Level"
+                        },
+                        "description": "汉字级别"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "description": "结果数量限制",
+                            "default": 20,
+                            "title": "Limit"
+                        },
+                        "description": "结果数量限制"
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "结果偏移量",
+                            "default": 0,
+                            "title": "Offset"
+                        },
+                        "description": "结果偏移量"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResult"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/characters/levels": {
+            "get": {
+                "tags": [
+                    "characters"
+                ],
+                "summary": "获取所有级别",
+                "description": "获取所有汉字级别\n\n示例:\n- `/api/v1/characters/levels` - 获取所有级别",
+                "operationId": "get_levels_api_v1_characters_levels_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Get Levels Api V1 Characters Levels Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/stats": {
+            "get": {
+                "tags": [
+                    "stats"
+                ],
+                "summary": "获取数据库统计信息",
+                "description": "获取数据库统计信息\n\n返回关于数据库中汉字的各种统计信息，包括:\n- 总汉字数\n- 各级别汉字数量\n- 字体一致/不一致数量\n- 各五十音分组汉字数量\n\n示例:\n- `/api/v1/stats` - 获取数据库统计信息",
+                "operationId": "get_stats_api_v1_stats_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DatabaseStats"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "summary": "Root",
+                "description": "API根路径，提供基本信息",
+                "operationId": "root__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CharacterDetail": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Id",
+                        "description": "汉字ID"
+                    },
+                    "japanese_kanji": {
+                        "type": "string",
+                        "title": "Japanese Kanji",
+                        "description": "日语汉字"
+                    },
+                    "chinese_hanzi": {
+                        "type": "string",
+                        "title": "Chinese Hanzi",
+                        "description": "中文汉字"
+                    },
+                    "kana_group": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Kana Group",
+                        "description": "五十音分组"
+                    },
+                    "level": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Level",
+                        "description": "级别"
+                    },
+                    "forms_match": {
+                        "anyOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Forms Match",
+                        "description": "字体是否一致"
+                    },
+                    "examples": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Examples",
+                        "description": "用例"
+                    },
+                    "on_readings": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "On Readings",
+                        "description": "音读み"
+                    },
+                    "kun_readings": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Kun Readings",
+                        "description": "训读み"
+                    },
+                    "chinese_readings": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Chinese Readings",
+                        "description": "中文读音"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "japanese_kanji",
+                    "chinese_hanzi"
+                ],
+                "title": "CharacterDetail",
+                "description": "汉字详细信息（包含读音）"
+            },
+            "DatabaseStats": {
+                "properties": {
+                    "total_characters": {
+                        "type": "integer",
+                        "title": "Total Characters",
+                        "description": "总汉字数"
+                    },
+                    "level_counts": {
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "type": "object",
+                        "title": "Level Counts",
+                        "description": "级别统计"
+                    },
+                    "form_matches": {
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "type": "object",
+                        "title": "Form Matches",
+                        "description": "字体一致统计"
+                    },
+                    "kana_groups": {
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "type": "object",
+                        "title": "Kana Groups",
+                        "description": "五十音分组统计"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total_characters",
+                    "level_counts",
+                    "form_matches",
+                    "kana_groups"
+                ],
+                "title": "DatabaseStats",
+                "description": "数据库统计信息"
+            },
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "SearchResult": {
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "title": "Total",
+                        "description": "总结果数"
+                    },
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/CharacterDetail"
+                        },
+                        "type": "array",
+                        "title": "Items",
+                        "description": "汉字列表"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "total",
+                    "items"
+                ],
+                "title": "SearchResult",
+                "description": "搜索结果"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}
