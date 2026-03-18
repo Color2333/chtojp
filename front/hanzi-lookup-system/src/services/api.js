@@ -4,7 +4,8 @@ import axios from "axios";
 const API_BASE_URL = "/api"; // 使用相对路径，让 Nginx 代理处理
 
 // 管理员 token 应通过环境变量注入，不硬编码在前端
-const getAdminToken = () => process.env.REACT_APP_ADMIN_TOKEN || "";
+// 使用 window 环境变量访问 CRA 注入的 env
+const getAdminToken = () => (typeof window !== "undefined" && window.env?.REACT_APP_ADMIN_TOKEN) || "";
 
 const api = {
   // Search for characters

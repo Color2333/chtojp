@@ -46,12 +46,12 @@ class DictionaryService:
             cursor.execute('''
             SELECT COUNT(*) FROM character_view
             WHERE on_readings LIKE ? OR kun_readings LIKE ?
-            ''', (f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\'))
+            ''', (f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%'))
         else:
             cursor.execute('''
             SELECT COUNT(*) FROM character_view
             WHERE japanese_kanji LIKE ? OR on_readings LIKE ? OR kun_readings LIKE ?
-            ''', (f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\'))
+            ''', (f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%'))
 
         total = cursor.fetchone()[0]
 
@@ -70,9 +70,9 @@ class DictionaryService:
                 id
             LIMIT ? OFFSET ?
             ''', (
-                f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\',
+                f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%',
                 keyword, keyword,
-                f'{_escape_like(keyword)}%' ESCAPE '\\', f'{_escape_like(keyword)}%' ESCAPE '\\',
+                f'{_escape_like(keyword)}%', f'{_escape_like(keyword)}%',
                 limit, offset
             ))
         else:
@@ -90,8 +90,8 @@ class DictionaryService:
                 id
             LIMIT ? OFFSET ?
             ''', (
-                f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\',
-                keyword, f'{_escape_like(keyword)}%' ESCAPE '\\', f'{_escape_like(keyword)}%' ESCAPE '\\', f'{_escape_like(keyword)}%' ESCAPE '\\',
+                f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%',
+                keyword, f'{_escape_like(keyword)}%', f'{_escape_like(keyword)}%', f'{_escape_like(keyword)}%',
                 limit, offset
             ))
 
@@ -136,12 +136,12 @@ class DictionaryService:
             cursor.execute('''
             SELECT COUNT(*) FROM character_view
             WHERE chinese_readings LIKE ?
-            ''', (f'%{_escape_like(keyword)}%' ESCAPE '\\',))
+            ''', (f'%{_escape_like(keyword)}%',))
         else:
             cursor.execute('''
             SELECT COUNT(*) FROM character_view
             WHERE chinese_hanzi LIKE ? OR chinese_readings LIKE ?
-            ''', (f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\'))
+            ''', (f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%'))
 
         total = cursor.fetchone()[0]
 
@@ -160,8 +160,8 @@ class DictionaryService:
                 id
             LIMIT ? OFFSET ?
             ''', (
-                f'%{_escape_like(keyword)}%' ESCAPE '\\',
-                keyword, f'{_escape_like(keyword)}%' ESCAPE '\\',
+                f'%{_escape_like(keyword)}%',
+                keyword, f'{_escape_like(keyword)}%',
                 limit, offset
             ))
         else:
@@ -179,8 +179,8 @@ class DictionaryService:
                 id
             LIMIT ? OFFSET ?
             ''', (
-                f'%{_escape_like(keyword)}%' ESCAPE '\\', f'%{_escape_like(keyword)}%' ESCAPE '\\',
-                keyword, f'{_escape_like(keyword)}%' ESCAPE '\\', f'{_escape_like(keyword)}%' ESCAPE '\\',
+                f'%{_escape_like(keyword)}%', f'%{_escape_like(keyword)}%',
+                keyword, f'{_escape_like(keyword)}%', f'{_escape_like(keyword)}%',
                 limit, offset
             ))
 
@@ -447,8 +447,10 @@ class DictionaryService:
                 ''', (char_id, i, reading))
         
         conn.commit()
-        
-        return DictionaryService.get_character_by_id(conn, char_id)
+
+        result = DictionaryService.get_character_by_id(conn, char_id)
+        assert result is not None, f"创建汉字 {char_id} 后未找到"
+        return result
 
     @staticmethod
     def update_character(
@@ -533,7 +535,9 @@ class DictionaryService:
         conn.commit()
 
         # 返回更新后的汉字信息
-        return DictionaryService.get_character_by_id(conn, char_id)
+        result = DictionaryService.get_character_by_id(conn, char_id)
+        assert result is not None, f"更新汉字 {char_id} 后未找到"
+        return result
 
     @staticmethod
     def delete_character(
